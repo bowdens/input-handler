@@ -120,10 +120,12 @@ int handle_input(char *command, Commands *c, Arg *a){
 			return id;
 		}
 		while(c && c->id != id) c = c->next;
-		if(c && c->response[0] != '\0' && c->response[0] != '\n'){
-			printf("%s\n",c->response);
+		if(c){
+			if(c->response[0] != '\0' && c->response[0] != '\n'){
+				printf("%s\n",c->response);
+			}
 		}else{
-			printf("Error: unknown command after command_id was found\n");
+			printf("ERROR: command ID not found in list of command IDs\n");
 			return -1;
 		}
 	}
