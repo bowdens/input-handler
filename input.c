@@ -1,8 +1,6 @@
 #include "input.h"
 #include <stdlib.h>
 #include <assert.h>
-#define ID_EXIT -2
-#define ID_HELP -3
 
 void print_list_commands(Commands *c){
 	printf("[");
@@ -30,7 +28,7 @@ int command_id(char *command, Commands *c){
 
 Arg *find_element(Arg *a, int index){
 	int i = 0;
-	while(a, i < index){
+	while(a && i < index){
 		a = a->next;
 		i++;
 	}
@@ -51,32 +49,57 @@ void print_arg(Arg *a){
 }
 
 Arg *create_arg(char argument[MAX_COMMAND_LENGTH], int id){
+	//printf("\t\tCreating Arg with arg %s, and id %d\n",argument, id);
 	Arg *a = malloc(sizeof(Arg));
 	assert(a);
 	strcpy(a->arg, argument);
 	a->id = id;
+	a->next = NULL;
 	return a;
 }
 
 Arg *append_arg(Arg *a, char argument[MAX_COMMAND_LENGTH], int id){
-	if(a == NULL) return create_arg(argument);
+	//printf("\t\tAppending Arg with arg %s, and id %d\n",argument, id);
+	if(strcmp(argument, "") == 0) return a;
+	if(a == NULL) return create_arg(argument, id);
 	Arg *head = a;
 	while(a->next) a = a->next;
-	a->next = create_arg(argument);
+	a->next = create_arg(argument, id);
+	//printf("\t");
+	//print_arg(head);
 	return head;
 }
 
-void sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
+Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
+	//printf("sanatising the command %s\n",command);
 	int j = 0;
-	while(j < MAX_COMMAND_LENGTH && str[j] != '\0'){
-		char str[MAX_COMMAND_LENGTH] = {0};
-		for(int i = 0; j+i < MAX_COMMAND_LENGTH && command[j+i] != ' ' && command[j+i] != '\0' && command[j+i] != '\n'; i ++){
-			str[j+i] = command[j+i];
-		}
-		str[j+i] = '\0';
-		a = append_arg(a, str, command_id(str));
-		j += i;
+	char instr[MAX_COMMAND_LENGTH] = {0};
+	while(j < MAX_COMMAND_LENGTH && command[j]  != '\0' && command[j] != '\n' && command[j] != ' '){
+		instr[j] = command[j];
+		j ++;
 	}
+	a = create_arg(instr, command_id(instr,c));
+	while(j < MAX_COMMAND_LENGTH && command[j] != '\0'){
+		//printf("\tup to %s\tj = %d\n",command + j,j);
+		char str[MAX_COMMAND_LENGTH] = {0};
+		int i = 0;
+		for(i = 0; j+i < MAX_COMMAND_LENGTH && command[j+i] != ' ' && command[j+i] != '\0' && command[j+i] != '\n'; i ++){
+			//printf("\t\ti = %d, j + i = %d, command[%d] = %c\n",i,i+j,i+j,command[i+j]);
+			str[i] = command[j+i];
+			//printf("\t\tstr = %s\n",str);
+		}
+		//printf("\ti = %d\n",i);
+		str[i] = '\0';
+		a = append_arg(a, str, command_id(str,c));
+		j += i;
+		//printf("\tj = %d\n",j);
+		if(i == 0){
+			j ++;
+		}
+	}
+	//printf("after sanatise_command, Arg list is:\n");
+	//print_arg(a);
+	return a;
 }
 
 void print_help(Commands *c){
@@ -87,8 +110,8 @@ void print_help(Commands *c){
 	}
 }
 
-int handle_input(char *command, Commands *c){
-	int id = command_id(command, c);
+int handle_input(char *command, Commands *c, Arg *a){
+	int id = a->id;
 	if(id == -1){
 		printf("Unknown command\n");
 	}else{
@@ -112,11 +135,11 @@ Arg *get_input(Commands *c, Arg *a){
 	char command[MAX_COMMAND_LENGTH] = {0};
 	printf("> ");
 	fgets(command, MAX_COMMAND_LENGTH, stdin);
-	sanatise_command(command,a);
+	a = sanatise_command(command,a,c);
 	//printf("   command entered was '%s'\n",command);
-	handle_input(command, c);
+	handle_input(command, c, a);
 	//printf("   id was %d\n",id);
-	return id;
+	return a;
 }
 
 Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]){

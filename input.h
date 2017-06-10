@@ -2,7 +2,9 @@
 #define MAX_RESPONSE_LENGTH 4096
 #define MAX_HELP_TEXT_LENGTH 4096
 
-#include "llist.h"
+#define ID_EXIT -2
+#define ID_HELP -3
+
 #include <stdio.h>
 #include <string.h>
 
@@ -20,9 +22,9 @@ typedef struct arg{
 	struct arg *next;
 } Arg;
 
-Arg *handle_input(char *command, Commands *c);
+int handle_input(char *command, Commands *c, Arg *a);
 
-Arg *get_input(Commands *c);
+Arg *get_input(Commands *c, Arg *a);
 
 void print_list_commands(Commands *c);
 
