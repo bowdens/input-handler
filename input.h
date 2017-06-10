@@ -14,9 +14,15 @@ typedef struct commands{
 	struct commands *next;
 } Commands;
 
-int handle_input(char *command, Commands *c);
+typedef struct arg{
+	char arg[MAX_COMMAND_LENGTH];
+	int id;
+	struct arg *next;
+} Arg;
 
-int get_input(Commands *c);
+Arg *handle_input(char *command, Commands *c);
+
+Arg *get_input(Commands *c);
 
 void print_list_commands(Commands *c);
 

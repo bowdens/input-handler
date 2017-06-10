@@ -11,53 +11,110 @@ void print_list_commands(Commands *c){
 		if(c->next){
 			printf(";\n");
 		}
-	c = c->next;
+		c = c->next;
 	}
 	printf("\n]\n");
 }
 
-void sanatise_command(char command[MAX_COMMAND_LENGTH]){
-	for(int i = 0; i < MAX_COMMAND_LENGTH && command[i] != '\0'; i ++){
-		if(command[i] == '\n'){
-			command[i] = '\0';
-			return;
+int command_id(char *command, Commands *c){
+        if(c == NULL) return -1;
+        while(c != NULL){
+                if(strcmp(command, c->command) == 0){
+                        return c->id;
+                }
+                c = c->next;
+        }
+        return -1;
+}
+
+
+Arg *find_element(Arg *a, int index){
+	int i = 0;
+	while(a, i < index){
+		a = a->next;
+		i++;
+	}
+	if(i != index) return NULL;
+	return a;
+}
+
+void print_arg(Arg *a){
+	printf("[");
+	while(a){
+		printf("%s",a->arg);
+		if(a->next){
+			printf(",");
 		}
+		a = a->next;
+	}
+	printf("]\n");
+}
+
+Arg *create_arg(char argument[MAX_COMMAND_LENGTH], int id){
+	Arg *a = malloc(sizeof(Arg));
+	assert(a);
+	strcpy(a->arg, argument);
+	a->id = id;
+	return a;
+}
+
+Arg *append_arg(Arg *a, char argument[MAX_COMMAND_LENGTH], int id){
+	if(a == NULL) return create_arg(argument);
+	Arg *head = a;
+	while(a->next) a = a->next;
+	a->next = create_arg(argument);
+	return head;
+}
+
+void sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
+	int j = 0;
+	while(j < MAX_COMMAND_LENGTH && str[j] != '\0'){
+		char str[MAX_COMMAND_LENGTH] = {0};
+		for(int i = 0; j+i < MAX_COMMAND_LENGTH && command[j+i] != ' ' && command[j+i] != '\0' && command[j+i] != '\n'; i ++){
+			str[j+i] = command[j+i];
+		}
+		str[j+i] = '\0';
+		a = append_arg(a, str, command_id(str));
+		j += i;
+	}
+}
+
+void print_help(Commands *c){
+	if(c == NULL) return;
+	while(c){
+		printf("%s\tID:%d\n\t%s\n",c->command,c->id,c->help_text);
+		c = c->next;
 	}
 }
 
 int handle_input(char *command, Commands *c){
-	//printf("handle_input called\n");
-	if(c == NULL) return -1;
-	Commands *head = c;
-	while(c != NULL){
-		if(strcmp(command, c->command) == 0){
-			if(c->response[0] != '\0' || strcmp(c->response, "")){
-				printf("%s\n",c->response);
-			}
-			if(c->id == ID_HELP){
-				while(head){
-					printf("%s\n", head->command);
-					printf("    %s\n",head->help_text);
-					printf("    ID: %d\n",head->id);
-					head = head->next;
-				}
-			}
-			return c->id;
+	int id = command_id(command, c);
+	if(id == -1){
+		printf("Unknown command\n");
+	}else{
+		if(id == ID_HELP){
+			print_help(c);
+			return id;
 		}
-		c = c->next;
+		while(c && c->id != id) c = c->next;
+		if(c && c->response[0] != '\0' && c->response[0] != '\n'){
+			printf("%s\n",c->response);
+		}else{
+			printf("Error: unknown command after command_id was found\n");
+			return -1;
+		}
 	}
-	printf("Unknown command\n");
-	return -1;
+	return id;
 }
 
-int get_input(Commands *c){
+Arg *get_input(Commands *c, Arg *a){
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
 	printf("> ");
 	fgets(command, MAX_COMMAND_LENGTH, stdin);
-	sanatise_command(command);
+	sanatise_command(command,a);
 	//printf("   command entered was '%s'\n",command);
-	int id = handle_input(command, c);
+	handle_input(command, c);
 	//printf("   id was %d\n",id);
 	return id;
 }

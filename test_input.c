@@ -7,9 +7,9 @@
 #define ID_BARRELROLL 4
 
 void init(Commands *c){
-	c = append_command_list(c, 2, "test", "", "tests an input");
-	c = append_command_list(c, 3, "three", "three was entered", "tests another input");
-	c = append_command_list(c, 4, "barrel roll", "doing a barrel roll", "just for fun");
+	c = append_command_list(c, ID_TEST, "test", "", "tests an input");
+	c = append_command_list(c, ID_THREE, "three", "three was entered", "tests another input");
+	c = append_command_list(c, ID_BARRELROLL, "barrel roll", "doing a barrel roll", "just for fun");
 }
 
 int main(){
@@ -23,14 +23,17 @@ int main(){
 	init(command_list);
 	//print_list_commands(command_list);
 	//printf("Entering loop\n");
+	Arg *arguments = malloc(sizeof(Arg));
 	while(1){
 		//printf("loop iteration\n");
-		int id = get_input(command_list);
-		if(id == 1){
+		arguments = get_input(command_list);
+		if(arguments == NULL) return 1;
+		int id = arguments->id;
+		if(id == ID_END){
 			return 1;
-		}else if(id == 2){
+		}else if(id == ID_TEST){
 			printf("executing two code\n");
-		}else if(id == 3){
+		}else if(id == ID_BARRELLROLL){
 			printf("executing three code\n");
 		}
 	}
