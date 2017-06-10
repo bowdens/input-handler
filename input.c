@@ -73,22 +73,43 @@ Arg *append_arg(Arg *a, char argument[MAX_COMMAND_LENGTH], int id){
 Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 	//printf("sanatising the command %s\n",command);
 	int j = 0;
+	int in_quote = 0;
 	char instr[MAX_COMMAND_LENGTH] = {0};
-	while(j < MAX_COMMAND_LENGTH && command[j]  != '\0' && command[j] != '\n' && command[j] != ' '){
+	while(j < MAX_COMMAND_LENGTH && command[j]  != '\0' && command[j] != '\n' && (command[j] != ' ' || in_quote == 1)){
+		if(command[j] == '"'){
+			in_quote = !in_quote;
+			for(int c = j; c < MAX_COMMAND_LENGTH-1; c++){
+				command[c] = command[c+1];
+			}
+			command[MAX_COMMAND_LENGTH - 1] = '\0';
+			if(in_quote == 0){
+				j --;				
+			}
+		}
 		instr[j] = command[j];
 		j ++;
 	}
+	//printf("%s\n",instr);
 	a = create_arg(instr, command_id(instr,c));
+	in_quote = 0;
 	while(j < MAX_COMMAND_LENGTH && command[j] != '\0'){
 		//printf("\tup to %s\tj = %d\n",command + j,j);
 		char str[MAX_COMMAND_LENGTH] = {0};
 		int i = 0;
-		for(i = 0; j+i < MAX_COMMAND_LENGTH && command[j+i] != ' ' && command[j+i] != '\0' && command[j+i] != '\n'; i ++){
-			//printf("\t\ti = %d, j + i = %d, command[%d] = %c\n",i,i+j,i+j,command[i+j]);
+		for(i = 0; j+i < MAX_COMMAND_LENGTH && (command[j+i] != ' ' || in_quote == 1) && command[j+i] != '\0' && command[j+i] != '\n'; i ++){
+			if(command[j+i] == '"'){
+				in_quote = !in_quote;
+				for(int c = j+i; c < MAX_COMMAND_LENGTH-1; c++){
+					command[c] = command[c+1];
+				}
+				command[MAX_COMMAND_LENGTH-1] = '\0';
+				if(in_quote == 0){
+					i--;
+				}
+			}
 			str[i] = command[j+i];
-			//printf("\t\tstr = %s\n",str);
 		}
-		//printf("\ti = %d\n",i);
+		//printf("\tstr = %s\n",str);
 		str[i] = '\0';
 		a = append_arg(a, str, command_id(str,c));
 		j += i;
@@ -120,6 +141,10 @@ int handle_input(char *command, Commands *c, Arg *a){
 			return id;
 		}
 		while(c && c->id != id) c = c->next;
+		if(c->id == ID_EXIT && id == ID_EXIT){
+			printf("%s\n",c->response);
+			exit(0);
+		}
 		if(c){
 			if(c->response[0] != '\0' && c->response[0] != '\n'){
 				printf("%s\n",c->response);

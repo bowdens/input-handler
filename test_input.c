@@ -3,15 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ID_TEST 2
-#define ID_THREE 3
+#define ID_NEWCOM 2
+#define ID_ECHO 3
 #define ID_BARRELROLL 4
-#define ID_NEWCOM 5
-#define ID_ECHO 6
-#define ID_COUNT 6
+#define ID_COUNT 4
 void init(Commands *c){
-	c = append_command_list(c, ID_TEST, "test", "", "tests an input");
-	c = append_command_list(c, ID_THREE, "three", "three was entered", "tests another input");
 	c = append_command_list(c, ID_BARRELROLL, "barrelroll", "doing a barrel roll", "just for fun");
 	c = append_command_list(c, ID_NEWCOM, "newcom", "creating new command", "creates a new command with the response text of your first argument, the help text of the second, and a defined id");
 	c = append_command_list(c, ID_ECHO, "echo", "", "echos back the text you said in the first argument. will repeat the specified number of times in the second (if there is a second argument");
@@ -37,12 +33,8 @@ int main(){
 		if(arguments == NULL) return 1;
 		int id = arguments->id;
 		//printf("id = %d\n",id);
-		if(id == ID_EXIT){
-			return 1;
-		}else if(id == ID_TEST){
-			printf("executing two code\n");
-		}else if(id == ID_BARRELROLL){
-			printf("executing three code\n");
+		if(id == ID_BARRELROLL){
+			printf(" _  _  _\n/T\\/O\\/M\\\n\\_/\\_/\\_/\n");
 		}else if(id == ID_NEWCOM){
 			char arg0[MAX_COMMAND_LENGTH] = {0};
 			char arg1[MAX_RESPONSE_LENGTH] = {0};
