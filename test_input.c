@@ -6,11 +6,13 @@
 #define ID_NEWCOM 2
 #define ID_ECHO 3
 #define ID_BARRELROLL 4
-#define ID_COUNT 4
+#define ID_MUM 5
+#define ID_COUNT 5
 void init(Commands *c){
 	c = append_command_list(c, ID_BARRELROLL, "barrelroll", "doing a barrel roll", "just for fun");
 	c = append_command_list(c, ID_NEWCOM, "newcom", "creating new command", "creates a new command with the response text of your first argument, the help text of the second, and a defined id");
 	c = append_command_list(c, ID_ECHO, "echo", "", "echos back the text you said in the first argument. will repeat the specified number of times in the second (if there is a second argument");
+	c = append_command_list(c, ID_MUM, "mum", "hi mum", "says hi mum");
 }
 
 int main(){
