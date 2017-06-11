@@ -48,7 +48,7 @@ void print_arg(Arg *a){
 	printf("]\n");
 }
 
-Arg *create_arg(char argument[MAX_COMMAND_LENGTH], int id){
+Arg *arg_create_list(char argument[MAX_COMMAND_LENGTH], int id){
 	//printf("\t\tCreating Arg with arg %s, and id %d\n",argument, id);
 	Arg *a = malloc(sizeof(Arg));
 	assert(a);
@@ -61,10 +61,10 @@ Arg *create_arg(char argument[MAX_COMMAND_LENGTH], int id){
 Arg *append_arg(Arg *a, char argument[MAX_COMMAND_LENGTH], int id){
 	//printf("\t\tAppending Arg with arg %s, and id %d\n",argument, id);
 	if(strcmp(argument, "") == 0) return a;
-	if(a == NULL) return create_arg(argument, id);
+	if(a == NULL) return arg_create_list(argument, id);
 	Arg *head = a;
 	while(a->next) a = a->next;
-	a->next = create_arg(argument, id);
+	a->next = arg_create_list(argument, id);
 	//printf("\t");
 	//print_arg(head);
 	return head;
@@ -90,7 +90,7 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 		j ++;
 	}
 	//printf("%s\n",instr);
-	a = create_arg(instr, command_id(instr,c));
+	a = arg_create_list(instr, command_id(instr,c));
 	in_quote = 0;
 	while(j < MAX_COMMAND_LENGTH && command[j] != '\0'){
 		//printf("\tup to %s\tj = %d\n",command + j,j);
