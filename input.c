@@ -161,7 +161,10 @@ Arg *get_input(Commands *c, Arg *a){
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
 	printf("> ");
-	fgets(command, MAX_COMMAND_LENGTH, stdin);
+	if(fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL){
+		printf("\nexiting due to EOF\n");
+		exit(0);
+	}
 	a = sanatise_command(command,a,c);
 	//printf("   command entered was '%s'\n",command);
 	handle_input(command, c, a);
