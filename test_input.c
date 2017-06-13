@@ -6,13 +6,13 @@
 #define ID_NEWCOM 2
 #define ID_ECHO 3
 #define ID_BARRELROLL 4
-#define ID_MUM 5
+#define ID_READFILE 5
 #define ID_COUNT 5
 void init(Commands *c){
 	c = append_command_list(c, ID_BARRELROLL, "barrelroll", "doing a barrel roll", "just for fun");
 	c = append_command_list(c, ID_NEWCOM, "newcom", "creating new command", "creates a new command with the response text of your first argument, the help text of the second, and a defined id");
 	c = append_command_list(c, ID_ECHO, "echo", "", "echos back the text you said in the first argument. will repeat the specified number of times in the second (if there is a second argument");
-	c = append_command_list(c, ID_MUM, "mum", "hi mum", "says hi mum");
+	c = append_command_list(c, ID_READFILE, "readfile", "", "reads a file specified and prints it to stdout");
 }
 
 int main(){
@@ -65,6 +65,22 @@ int main(){
 			}
 			for(int i = 0; i < arg2; i ++){
 				printf("%s\n",arg1);
+			}
+		}else if(id == ID_READFILE){
+			char loc[MAX_COMMAND_LENGTH] = {0};
+			if(arguments->next){
+				strcpy(loc, arguments->next->arg);
+				FILE *f = fopen(loc, "r");
+				if(f){
+					char buffer[MAX_COMMAND_LENGTH] = {0};
+					while(fgets(buffer,MAX_COMMAND_LENGTH, f) != NULL){
+						printf("%s",buffer);
+					}
+				}else{
+					printf("Error: The file %s does not exist\n",loc);
+				}
+			}else{
+				printf("Specify a file for %s\n",arguments->arg);
 			}
 		}
 	}
