@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define C_R "\x1b[31m"
+#define C_G   "\x1b[32m"
+#define C_Y  "\x1b[33m"
+#define C_B    "\x1b[34m"
+#define C_M "\x1b[35m"
+#define C_C "\x1b[36m"
+#define C_W   "\x1b[0m" 
+
 void print_list_commands(Commands *c){
 	printf("[");
 	while(c){
@@ -123,15 +131,16 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 	return a;
 }
 
+
 void print_help(Commands *c){
 	if(c == NULL) return;
 	while(c){
-		printf("%s\tID:%d\n\t%s\n",c->command,c->id,c->help_text);
+		printf(C_C"%s"C_W"\n    %s\n",c->command,c->help_text);
 		c = c->next;
 	}
 }
 
-int handle_input(char *command, Commands *c, Arg *a){
+int handle_input(Commands *c, Arg *a){
 	int id = a->id;
 	if(id == -1){
 		printf("Unknown command\n");
@@ -167,7 +176,7 @@ Arg *get_input(Commands *c, Arg *a){
 	}
 	a = sanatise_command(command,a,c);
 	//printf("   command entered was '%s'\n",command);
-	handle_input(command, c, a);
+	handle_input(c, a);
 	//printf("   id was %d\n",id);
 	return a;
 }
@@ -190,11 +199,18 @@ Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char res
 	return c;
 }
 
+Arg *init_arg_list(){
+	Arg *a = malloc(sizeof(Arg));
+	assert(a);
+	a->next = NULL;
+	return a;
+}
+
 Commands *init_command_list(){
 	//printf("    init_command_list called\n");
-	Commands *c = create_command_list(ID_HELP, "help", " ", "display this information");
+	Commands *c = create_command_list(ID_HELP, "help", " ", "Display this information.");
 	//printf("creating exit command\n");
-	c->next = create_command_list(ID_EXIT, "exit", "exiting program", "exits the program");
+	c->next = create_command_list(ID_EXIT, "exit", "exiting program", "Exits the program.");
 	return c;
 }
 
