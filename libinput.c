@@ -1,4 +1,4 @@
-#include "input.h"
+#include "libinput.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -133,6 +133,7 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 
 
 void print_help(Commands *c){
+	//printf("TESTING\n");
 	if(c == NULL) return;
 	while(c){
 		printf(C_C"%s"C_W"\n    %s\n",c->command,c->help_text);

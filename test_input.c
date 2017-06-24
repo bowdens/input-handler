@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "input.h"
+#include "libinput.h"
 #include <stdlib.h>
 #include <string.h>
 
