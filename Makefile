@@ -1,16 +1,16 @@
-default: test_input #test_input_static test_input_dynamic
+default: test_input test_input_static
 
-test_input_static: test_input.c libinput.a
+test_input_static: test_input.c libtalaris.a
 	gcc $^ -o $@
 
-test_input: test_input.c libinput.so
-	gcc test_input.c -L. -linput -o  $@
+test_input: test_input.c libtalaris.so
+	gcc test_input.c -L. -ltalaris -o  $@ -Wall -Wextra
 
-libinput.a: libinput.o
+libtalaris.a: libtalaris.o
 	ar -rcv $@ $^
 
-libinput.so: libinput.o
-	gcc -shared -o libinput.so libinput.o
+libtalaris.so: libtalaris.o
+	gcc -shared -o libtalaris.so libtalaris.o
 
-libinput.o: libinput.c libinput.h
-	gcc -c -fPIC libinput.c -o $@
+libtalaris.o: libtalaris.c libtalaris.h
+	gcc -c -fPIC libtalaris.c -o $@
