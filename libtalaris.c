@@ -1,4 +1,4 @@
-#include "libinput.h"
+#include "libtalaris.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -8,7 +8,7 @@
 #define C_B    "\x1b[34m"
 #define C_M "\x1b[35m"
 #define C_C "\x1b[36m"
-#define C_W   "\x1b[0m" 
+#define C_W   "\x1b[0m"
 
 void print_list_commands(Commands *c){
 	printf("[");
@@ -91,7 +91,7 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 			}
 			command[MAX_COMMAND_LENGTH - 1] = '\0';
 			if(in_quote == 0){
-				j --;				
+				j --;
 			}
 		}
 		instr[j] = command[j];
@@ -144,7 +144,7 @@ void print_help(Commands *c){
 int handle_input(Commands *c, Arg *a){
 	int id = a->id;
 	if(id == -1){
-		printf("Unknown command\n");
+		printf("Unknown command. Enter "C_C"help"C_W" for a list of available commands.\n");
 	}else{
 		if(id == ID_HELP){
 			print_help(c);
@@ -209,7 +209,7 @@ Arg *init_arg_list(){
 
 Commands *init_command_list(){
 	//printf("    init_command_list called\n");
-	Commands *c = create_command_list(ID_HELP, "help", " ", "Display this information.");
+	Commands *c = create_command_list(ID_HELP, "help", "", "Display this information.");
 	//printf("creating exit command\n");
 	c->next = create_command_list(ID_EXIT, "exit", "exiting program", "Exits the program.");
 	return c;
@@ -225,4 +225,24 @@ Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENG
 	c->next = create_command_list(id, command, response, help_text);
 	//print_list_commands(head);
 	return head;
+}
+
+Commands *delete_command(Commands *c, int id){
+	if(c == NULL) return NULL;
+	Commands *head = c;
+	if(c->id == id){
+		c = c->next;
+		free(head);
+		return c;
+	}
+	while(c && c->next){
+		if(c->next->id == id){
+			Commands *temp = c->next;
+			c->next = c->next->next;
+			free(temp);
+			return head;
+		}
+		c = c->next;
+	}
+	return c;
 }
