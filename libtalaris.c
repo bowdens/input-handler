@@ -1,14 +1,11 @@
 #include "libtalaris.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
-#define C_R "\x1b[31m"
-#define C_G   "\x1b[32m"
-#define C_Y  "\x1b[33m"
-#define C_B    "\x1b[34m"
-#define C_M "\x1b[35m"
-#define C_C "\x1b[36m"
-#define C_W   "\x1b[0m"
+void print_error(char *error){
+    printf(C_R"ERROR"C_W": %s\n",error);
+}
 
 void print_list_commands(Commands *c){
 	printf("[");
@@ -43,6 +40,39 @@ Arg *find_element(Arg *a, int index){
 	if(i != index) return NULL;
 	return a;
 }
+
+//command stack
+
+ArgStack *create_arg_stack(Arg *a){
+    ArgStack *as = malloc(sizeof(ArgStack));
+    assert(as);
+    as->a = a;
+    as->next = NULL;
+    as->prev = NULL;
+    return as;
+}
+
+ArgStack *last_arg_stack(ArgStack *as){
+    if(as == NULL) return NULL;
+    while(as->next) as = as->next;
+    return as;
+}
+
+ArgStack *first_arg_stack(ArgStack *as){
+    if(as == NULL) return NULL;
+    while(as->prev) as = as->prev;
+    return as;
+}
+
+ArgStack *push_arg_stack(ArgStack *a, ArgStack *b){
+    if(a == NULL) return b;
+    if(b == NULL) return a;
+    a->prev = last_arg_stack(b);
+    last_arg_stack(b)->next = a;
+    return b;
+}
+
+//commands entered
 
 void print_arg(Arg *a){
 	printf("[");
@@ -141,11 +171,90 @@ void print_help(Commands *c){
 	}
 }
 
+Similar *new_similar(char *command){
+    //printf("Creating new similar entry with command: %s\n",command);
+    Similar *s = malloc(sizeof(Similar));
+    assert(s);
+    strncpy(s->command, command, MAX_COMMAND_LENGTH);
+    s->next = NULL;
+    return s;
+}
+
+Similar *last_similar(Similar *s){
+    if(s == NULL) return s;
+    while(s->next) s = s->next;
+    return s;
+}
+
+Similar *append_similar(Similar *a, Similar *b){
+    if(a == NULL) return b;
+    if(b == NULL) return a;
+    last_similar(a)->next = b;
+    return a;
+}
+
+void *free_similar(Similar *s){
+    Similar *temp = s->next;
+    while(s){
+        temp = s->next;
+        free(s);
+        s = temp;
+    }
+    free(temp);
+}
+
+int diff_letters(char *str1, char *str2){
+    int diff_count = 0;
+    int len1 = strlen(str1);
+    int len2 = strlen(str2);
+    int max = len1 * (len1 >= len2) + len2 * (len2 > len1);
+    int min = len1 * (len1 < len2) + len2 * (len2 <= len1);
+    for(int i = 0; i < min; i ++){
+        diff_count += (str1[i] != str2[i]);
+    }
+    diff_count += max - min;
+    return diff_count;
+}
+
+Similar *find_similar_commands(char *command, Commands *c, int sim){
+    Similar *s = NULL;
+    while(c){
+        int diff = diff_letters(command, c->command);
+        //printf("%s has a similarity of %d  with %s\n",command, diff,  c->command);
+        if(abs(diff) <= sim){
+            //the commands are similar enough (within sim characters difference)
+            s = append_similar(s, new_similar(c->command));
+        }
+        c = c->next;
+    }
+    return s;
+}
+
+void print_similar(Similar *s){
+    if(s == NULL) return;
+    while(s){
+        printf(C_C"%s"C_W,s->command);
+        if(s->next){
+            printf(", ");
+        }else{
+            printf("\n");
+        }
+        s = s->next;
+    }
+}
+
 int handle_input(Commands *c, Arg *a){
 	int id = a->id;
 	if(id == -1){
-		printf("Unknown command. Enter "C_C"help"C_W" for a list of available commands.\n");
-	}else{
+		Similar *s = find_similar_commands(a->arg, c, 3);
+        printf("Unknown command. Enter "C_C"help"C_W" for a list of available commands.\n");
+	    if(s){
+            //if there are similar commands
+            printf("Did you mean:\n");
+            print_similar(s);
+            free_similar(s);
+        }
+    }else{
 		if(id == ID_HELP){
 			print_help(c);
 			return id;
@@ -160,14 +269,14 @@ int handle_input(Commands *c, Arg *a){
 				printf("%s\n",c->response);
 			}
 		}else{
-			printf("ERROR: command ID not found in list of command IDs\n");
+			print_error("command ID not found in list of command IDs");
 			return -1;
 		}
 	}
 	return id;
 }
 
-Arg *get_input(Commands *c, Arg *a){
+Arg *get_input(Commands *c, Arg *a/*, ArgStack *as*/){
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
 	printf("> ");

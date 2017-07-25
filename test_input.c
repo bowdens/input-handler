@@ -26,7 +26,7 @@ int main(){
 	Arg *arguments = init_arg_list();
 
 	int id_count = ID_COUNT;
-	
+
 	while(1){
 		arguments = get_input(command_list, arguments);
 		if(arguments == NULL) return 1;
@@ -34,7 +34,7 @@ int main(){
 		if(id == ID_BARRELROLL){
 			printf(" _  _  _\n/T\\/O\\/M\\\n\\_/\\_/\\_/\n");
 		}else if(id == ID_NEWCOM){
-			//multiple arguments can be used. 
+			//multiple arguments can be used.
 			//arguments->arg refers to the command entered, in this case it would be "newcom"
 			//arguemnts->next->arg would refer to the first argument entered, for example if "newcom hello hi greetinger" was entered then "hello" would be arguments->next->arg
 			//this method of referencing the next can be done continuosly until arguments->next will result in a NULL indicating that there are no more arguments entered
@@ -42,7 +42,7 @@ int main(){
 				command_list = append_command_list(command_list, id_count + 1,arguments->next->arg, arguments->next->next->arg, arguments->next->next->next->arg);
 				id_count ++;
 			}else{
-				printf("ERROR: newcom must be in the form 'newcom COMMAND RESPONSE HELP_TEXT'\n");
+				printf(C_R"ERROR"C_W": newcom must be in the form 'newcom COMMAND RESPONSE HELP_TEXT'\n");
 			}
 		}else if(id == ID_ECHO){
 			if(arguments && arguments->next){
@@ -54,7 +54,7 @@ int main(){
 					printf("%s\n",arguments->next->arg);
 				}
 			}else{
-				printf("ERROR: echo must be in the form 'echo STRING [optional int]'\n");
+				printf(C_R"ERROR"C_W": echo must be in the form 'echo STRING [optional int]'\n");
 			}
 		}else if(id == ID_READFILE){
 			char loc[MAX_COMMAND_LENGTH] = {0};
@@ -67,7 +67,7 @@ int main(){
 						printf("%s",buffer);
 					}
 				}else{
-					printf("Error: The file %s does not exist\n",loc);
+					printf(C_R"ERROR"C_W": The file %s does not exist\n",loc);
 				}
 			}else{
 				printf("Specify a file for %s\n",arguments->arg);
