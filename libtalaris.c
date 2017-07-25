@@ -193,7 +193,7 @@ Similar *append_similar(Similar *a, Similar *b){
     return a;
 }
 
-void *free_similar(Similar *s){
+void free_similar(Similar *s){
     Similar *temp = s->next;
     while(s){
         temp = s->next;
@@ -247,7 +247,7 @@ int handle_input(Commands *c, Arg *a){
 	int id = a->id;
 	if(id == -1){
 		Similar *s = find_similar_commands(a->arg, c, 3);
-        printf("Unknown command. Enter "C_C"help"C_W" for a list of available commands.\n");
+        print_error("Unknown command. Enter "C_C"help"C_W" for a list of available commands.");
 	    if(s){
             //if there are similar commands
             printf("Did you mean:\n");
@@ -269,7 +269,7 @@ int handle_input(Commands *c, Arg *a){
 				printf("%s\n",c->response);
 			}
 		}else{
-			print_error("command ID not found in list of command IDs");
+			print_error("Command ID not found in list of command IDs");
 			return -1;
 		}
 	}
