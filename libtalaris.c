@@ -4,7 +4,7 @@
 #include <math.h>
 
 void print_error(char *error){
-    printf(C_R"ERROR"C_W": %s\n",error);
+    fprintf(stderr,C_R"ERROR"C_W": %s\n",error);
 }
 
 void print_list_commands(Commands *c){
