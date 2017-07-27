@@ -16,7 +16,7 @@ void print_list_commands(Commands *c){
 		}
 		c = c->next;
 	}
-	printf("\n]\n");
+	printf("]\n");
 }
 
 int command_id(char *command, Commands *c){
@@ -245,7 +245,7 @@ void print_similar(Similar *s){
 
 int handle_input(Commands *c, Arg *a){
 	int id = a->id;
-	if(id == -1){
+	if(id == ID_NONE){
 		Similar *s = find_similar_commands(a->arg, c, 3);
         print_error("Unknown command. Enter "C_C"help"C_W" for a list of available commands.");
 	    if(s){
@@ -269,7 +269,7 @@ int handle_input(Commands *c, Arg *a){
 				printf("%s\n",c->response);
 			}
 		}else{
-			print_error("Command ID not found in list of command IDs");
+			print_error("Command ID not found in list of command IDs despite an ID being found originally. Please contact the developer of libtalaris");
 			return -1;
 		}
 	}
@@ -279,9 +279,9 @@ int handle_input(Commands *c, Arg *a){
 Arg *get_input(Commands *c, Arg *a/*, ArgStack *as*/){
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
-	printf("> ");
-	if(fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL){
-		printf("\nexiting due to EOF\n");
+	printf("%c ", PROMPT_CHAR);
+    if(fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL){
+        printf("\nexiting due to EOF\n");
 		exit(0);
 	}
 	a = sanatise_command(command,a,c);

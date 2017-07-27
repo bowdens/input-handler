@@ -5,6 +5,9 @@
 #define MAX_RESPONSE_LENGTH 4096
 #define MAX_HELP_TEXT_LENGTH 4096
 
+#define PROMPT_CHAR '>'
+
+#define ID_NONE -1
 #define ID_EXIT -2
 #define ID_HELP -3
 
