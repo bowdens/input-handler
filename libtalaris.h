@@ -19,9 +19,6 @@
 #define C_C "\x1b[36m"
 #define C_W   "\x1b[0m"
 
-#include <stdio.h>
-#include <string.h>
-
 typedef struct commands{
     char command[MAX_COMMAND_LENGTH];
     char response[MAX_RESPONSE_LENGTH];
@@ -47,18 +44,34 @@ typedef struct similar{
     struct similar *next;
 } Similar;
 
+
 int handle_input(Commands *c, Arg *a);
 
+//Arg functions
 Arg *get_input(Commands *c, Arg *a);
 
+Arg *init_arg_list();
+
+//Command Functions
 void print_list_commands(Commands *c);
 
 Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]);
 
 Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]);
 
+Commands *delete_command(Commands *c, int id, int verbose);
+
+Commands *delete_command_char(Commands *c, char *command, int verbose);
+
 Commands *init_command_list();
 
-Arg *init_arg_list();
+int command_id(char *command, Commands *c);
+
+char *command_str(int id, Commands *c);
+
+//GLOBAL VARIABLE INTERACTIONS
+int get_allowDuplicateCommands(void);
+
+void set_allowDuplicateCommands(int x);
 
 #endif

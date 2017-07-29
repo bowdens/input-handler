@@ -1,9 +1,10 @@
 CC=GCC
 CFLAGS=-Wall -Wextra
 
-default: test_input test_input_static
+default: test_input_static
 
-test_input_static: test_input.c libtalaris.c
+test_input_static:
+	gcc -o test_input_static test_input.c libtalaris.c libtalaris.h -Wall -Wextra
 
 test_input: test_input.c libtalaris.so
 	gcc test_input.c -L/home/tom/Desktop/code/c/input -ltalaris -o  $@ -Wall -Wextra
