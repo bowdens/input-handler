@@ -1,13 +1,15 @@
 CC=GCC
 CFLAGS=-Wall -Wextra
 
-default: test_input_static
+#Change the name of the main file here, and the name of the desired executable file
+MAINNAME = test.c
+OUTNAME = test
 
-test_input_static: test_input.c libtalaris.c libtalaris.h
-	gcc -o test_input_static test_input.c libtalaris.c libtalaris.h -Wall -Wextra
 
-test_input: test_input.c libtalaris.so
-	gcc test_input.c -L/home/tom/Desktop/code/c/input -ltalaris -o  $@ -Wall -Wextra
+default: $(OUTNAME) setup
+
+$(OUTNAME): $(MAINNAME) libtalaris.so
+	gcc $(MAINNAME) -ltalaris -o  $@ -Wall -Wextra
 
 libtalaris.a: libtalaris.o
 	ar -rcv $@ $^
@@ -17,3 +19,8 @@ libtalaris.o: libtalaris.c libtalaris.h
 
 libtalaris.so: libtalaris.o
 	gcc -shared -o libtalaris.so libtalaris.o
+
+setup:
+	sudo cp ./libtalaris.so /usr/lib
+	sudo chmod 0755 /usr/lib/libtalaris.so
+	sudo ldconfig

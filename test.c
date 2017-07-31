@@ -17,7 +17,7 @@ void init(Commands *c){
 	//commands are defined here, the logic is in the main loop
     c = append_command_list(c, ID_NEWCOM, "newcom", "", "creates a new command with the response text of your first argument, the help text of the second, and a defined id", COM_SHOWN);
 	c = append_command_list(c, ID_ECHO, "echo", "", "echos back the text you said in the first argument. will repeat the specified number of times in the second (if there is a second argument", COM_SHOWN);
-    c = append_command_list(c, ID_BARRELROLL, "barrel", "doing a barrel roll", "easter egg!", COM_SHOWN);
+    c = append_command_list(c, ID_BARRELROLL, "barrel", "doing a barrel roll", "easter egg!", COM_HIDDEN);
 	c = append_command_list(c, ID_READFILE, "readfile", "", "reads a file specified and prints it to stdout", COM_SHOWN);
     c = append_command_list(c, ID_DELCOM, "delcom", "", "deletes a command with a specified ID", COM_SHOWN);
     c = append_command_list(c, ID_SSECRET, "ssecre", "You aren't supposed to see this", "If you are seeing this there is an error", COM_SILENT);
@@ -25,6 +25,7 @@ void init(Commands *c){
 }
 
 int main(){
+    //printf("Edited\n");
 	//inbuilt function to initialise a command list. Includes the functions exit and help
 	Commands *command_list = init_command_list();
 	init(command_list);

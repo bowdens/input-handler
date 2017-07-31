@@ -219,7 +219,8 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 
 void print_help(Commands *c, int force){
 	//prints all of the commands in a user friendly way, unless it is a hidden command
-	if(c == NULL) return;
+	//printf("EDITED\n");
+    if(c == NULL) return;
 	while(c){
 		if(c->state == COM_SHOWN || force == PRINT_FORCE){
             printf(C_C"%s"C_W,c->command);
