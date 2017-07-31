@@ -1,6 +1,13 @@
 #ifndef _TALARIS
 #define _TALARIS 1
 
+#define COM_SHOWN 1
+#define COM_HIDDEN 0
+#define COM_SILENT -1
+
+#define PRINT_FORCE 1
+#define PRINT_SILENT 0
+
 #define MAX_COMMAND_LENGTH 128
 #define MAX_RESPONSE_LENGTH 4096
 #define MAX_HELP_TEXT_LENGTH 4096
@@ -24,6 +31,7 @@ typedef struct commands{
     char response[MAX_RESPONSE_LENGTH];
 	char help_text[MAX_HELP_TEXT_LENGTH];
 	int id;
+    int state;
 	struct commands *next;
 } Commands;
 
@@ -55,9 +63,9 @@ Arg *init_arg_list();
 //Command Functions
 void print_list_commands(Commands *c);
 
-Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]);
+Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH], int state);
 
-Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]);
+Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH], int state);
 
 Commands *delete_command(Commands *c, int id, int verbose);
 
@@ -71,7 +79,8 @@ char *command_str(int id, Commands *c);
 
 //GLOBAL VARIABLE INTERACTIONS
 int get_allowDuplicateCommands(void);
-
 void set_allowDuplicateCommands(int x);
 
+int get_allowForcePrint(void);
+void set_allowForcePrint(int x);
 #endif

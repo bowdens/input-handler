@@ -3,7 +3,7 @@ CFLAGS=-Wall -Wextra
 
 default: test_input_static
 
-test_input_static:
+test_input_static: test_input.c libtalaris.c libtalaris.h
 	gcc -o test_input_static test_input.c libtalaris.c libtalaris.h -Wall -Wextra
 
 test_input: test_input.c libtalaris.so

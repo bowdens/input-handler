@@ -7,15 +7,22 @@
 
 //GLOBAL VARIBALES
 int allowDuplicateCommands = 0;
-
 int get_allowDuplicateCommands(void){
     return allowDuplicateCommands;
 }
-
 void set_allowDuplicateCommands(int x){
     allowDuplicateCommands = x;
 }
 
+int allowForcePrint = PRINT_SILENT;
+int get_allowForcePrint(void){
+    return allowForcePrint;
+}
+void set_allowForcePrint(int x){
+    allowForcePrint = x;
+}
+
+//REGULAR FUNCTIONS
 
 void print_error(char *error){
     fprintf(stderr,C_R"ERROR"C_W": %s\n",error);
@@ -37,7 +44,7 @@ int command_id(char *command, Commands *c){
     if(c == NULL) return ID_NONE;
     if(strcmp(command, "") == 0) return ID_NONE;
     while(c != NULL){
-        if(strcmp(command, c->command) == 0){
+        if(!strcmp(command, c->command) && c->state != COM_SILENT){
             return c->id;
         }
         c = c->next;
@@ -210,12 +217,17 @@ Arg *sanatise_command(char command[MAX_COMMAND_LENGTH], Arg *a, Commands *c){
 }
 
 
-void print_help(Commands *c){
-	//printf("TESTING\n");
+void print_help(Commands *c, int force){
+	//prints all of the commands in a user friendly way, unless it is a hidden command
 	if(c == NULL) return;
 	while(c){
-		printf(C_C"%s"C_W"\n    %s\n",c->command,c->help_text);
-		c = c->next;
+		if(c->state == COM_SHOWN || force == PRINT_FORCE){
+            printf(C_C"%s"C_W,c->command);
+		    if(c->state == COM_HIDDEN) printf(" (hidden)");
+            if(c->state == COM_SILENT) printf(" (silent)");
+            printf("\n    %s\n",c->help_text);
+        }
+        c = c->next;
 	}
 }
 
@@ -269,7 +281,7 @@ Similar *find_similar_commands(char *command, Commands *c, int sim){
     while(c){
         int diff = diff_letters(command, c->command);
         //printf("%s has a similarity of %d  with %s\n",command, diff,  c->command);
-        if(abs(diff) <= sim){
+        if(abs(diff) <= sim && c->state == COM_SHOWN){
             //the commands are similar enough (within sim characters difference)
             s = append_similar(s, new_similar(c->command));
         }
@@ -294,7 +306,7 @@ void print_similar(Similar *s){
 int command_exists_str(Commands *c, char *command){
     if(c == NULL) return 0;
     while(c){
-        if(!strcmp(c->command, command)){
+        if(!strcmp(c->command, command) && c->state != COM_SILENT){
             return 1;
         }
         c = c->next;
@@ -305,7 +317,7 @@ int command_exists_str(Commands *c, char *command){
 int command_exists_id(Commands *c, int id){
     if(c == NULL) return 0;
     while(c){
-        if(c->id == id){
+        if(c->id == id && c->state != COM_SILENT){
             return 1;
         }
         c = c->next;
@@ -330,7 +342,7 @@ int handle_input(Commands *c, Arg *a){
         }
     }else{
 		if(id == ID_HELP){
-			print_help(c);
+			print_help(c, allowForcePrint);
 			return id;
 		}
 		while(c && c->id != id) c = c->next;
@@ -378,21 +390,15 @@ void insert_at_end(char *first, char *second, int maxLen){
     //printf("first = %s\n",first);
 }
 
-Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]){
-	//printf("    called create_command_list\n");
+Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH], int state){
 	Commands *c = malloc(sizeof(Commands));
 	assert(c);
-	//printf("    copying data\n");
 	strcpy(c->command, command);
-	//printf("        copied command\n");
 	strcpy(c->response, response);
-	//printf("        copied response\n");
 	strcpy(c->help_text, help_text);
-	//printf("        copied help_text\n");
 	c->id = id;
-	//printf("        copied id\n");
+    c->state = state;
 	c->next = NULL;
-	//print_list_commands(c);
 	return c;
 }
 
@@ -405,9 +411,9 @@ Arg *init_arg_list(){
 
 Commands *init_command_list(){
 	//printf("    init_command_list called\n");
-	Commands *c = create_command_list(ID_HELP, "help", "", "Display this information.");
+	Commands *c = create_command_list(ID_HELP, "help", "", "Display this information.", COM_SHOWN);
 	//printf("creating exit command\n");
-	c->next = create_command_list(ID_EXIT, "exit", "exiting program", "Exits the program.");
+	c->next = create_command_list(ID_EXIT, "exit", "exiting program", "Exits the program.", COM_SHOWN);
 	return c;
 }
 
@@ -421,52 +427,46 @@ int digit_num(int num){
     return i;
 }
 
-Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH]){
-	if(c == NULL) return create_command_list(id, command, response, help_text);
+Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH], int state){
+	if(c == NULL) return create_command_list(id, command, response, help_text, state);
 	if(id == ID_EXIT || id == ID_HELP) return c;
 	Commands *head = c;
     char nCommand[MAX_COMMAND_LENGTH] = {0};
     if(allowDuplicateCommands){
+        //the command does not need to be unique, so copy as is
         strcpy(nCommand, command);
     }else{
-        //printf("copying %s into nCommand\n",command);
+        //make the command unique by appending a digit to its name if required
         strcpy(nCommand, command);
-        //printf("nCommand = %s\n",nCommand);
         int catNum = 2;
-        while(command_id(nCommand, c) != ID_NONE){
-            //printf("\n");
+        while(command_id(nCommand, c) != ID_NONE && digit_num(catNum) < MAX_COMMAND_LENGTH){
+            //loop to append digits until a unique version is found
             char num[64] = {0};
             int digits = digit_num(catNum);
-            //printf("%d has %d digits\n",catNum, digits);
             int temp = catNum;
             for(int i = digits-1; i >= 0; i --){
                 num[i] = temp%10 + '0';
-                //printf("temp = %d, temp mod 10 = %d\n",temp,temp%10);
-                //printf("num[%d] = %c\n",i,num[i]);
                 temp -= (temp%10);
                 temp /= 10;
-                //printf("temp = %d\n\n",temp);
             }
-            //printf("num = %s\n",num);
             strcpy(nCommand, command);
-            //printf("nCommand = %s\n",nCommand);
             insert_at_end(nCommand, num, MAX_COMMAND_LENGTH);
-            //printf("nCommand = %s\n",nCommand);
             catNum ++;
         }
     }
-    //printf("nCommand = %s\n",nCommand);
-	while(c->next != NULL){
-		c = c->next;
-	}
-	c->next = create_command_list(id, nCommand, response, help_text);
-	//print_list_commands(head);
+    //get to end of the list
+	while(c->next != NULL) c = c->next;
+    //append command
+	c->next = create_command_list(id, nCommand, response, help_text, state);
 	return head;
 }
 
 Commands *delete_command_char(Commands *c, char *command, int verbose){
     int id = command_id(command, c);
-    if(id == ID_NONE) return c;
+    if(id == ID_NONE){
+        if(verbose) printf("command %s was not found\n",command);
+        return c;
+    }
     return delete_command(c, id, verbose);
 }
 
