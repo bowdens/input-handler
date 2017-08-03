@@ -24,3 +24,4 @@ setup:
 	sudo cp ./libtalaris.so /usr/lib
 	sudo chmod 0755 /usr/lib/libtalaris.so
 	sudo ldconfig
+	sudo cp ./libtalaris.h /usr/include/
