@@ -10,7 +10,7 @@ void print_error(char *error);
 //GLOBAL VARIBALES
 int allowDuplicateCommands = 0;
 int allowForcePrint = PRINT_SILENT;
-int lt_verbose = 0;
+int lt_verbose = LT_VERBOSE_OFF;
 
 //controls whether or not duplicate commands are allowed
 int get_allowDuplicateCommands(void){
@@ -85,6 +85,15 @@ void set_lt_exit_function(Exitf *exitf){
 
 
 //REGULAR FUNCTIONS
+
+void print_no_memory(char *varName){
+    printf(LT_PRINT_ERROR"Tried to allocate memory for %s but could not. Out of memory or bug in program?\n",varName);
+    exit(0);
+}
+
+void check_not_null(void *ptr, char *varName){
+    if(ptr == NULL) print_no_memory(varName);
+}
 
 void print_error(char *error){
     //short hand method of printing an error message
@@ -183,7 +192,7 @@ ArgStack *create_arg_stack(Arg *a){
     //creates a new argstack and returns it
 
     ArgStack *as = malloc(sizeof(ArgStack));
-    assert(as);
+    check_not_null(as, "new ArgStack");
     as->a = a;
     as->next = NULL;
     as->prev = NULL;
@@ -238,7 +247,7 @@ Arg *arg_create_list(Commands *c, char argument[MAX_COMMAND_LENGTH], int id, int
 
     //Only allow a null string if specified
     if(!strcmp(argument, "")  && !allowNoString){
-        if(lt_verbose) printf(LT_PRINT_WARN"Tried to create command with no text but that is disallowed since allowNoString = %s\n", allowNoString?"True":"False");
+        if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"Tried to create command with no text but that is disallowed since allowNoString = %s\n", allowNoString?"True":"False");
         return arg_create_list(c, "unnammed", id, allowNoString);
     }
     //if the command with the current name already exists, append a cat num to it
@@ -246,7 +255,10 @@ Arg *arg_create_list(Commands *c, char argument[MAX_COMMAND_LENGTH], int id, int
     //num[0] = catNum%10 + '0';
     //if(command_id(argument, c) != ID_NONE) return arg_create_list(c, strcat(argument, num), id, allowNoString, catNum + 1);
 	Arg *a = malloc(sizeof(Arg));
-	assert(a);
+	//printf(LT_PRINT_WARN"creating NULL arglist\n");
+    //free(a);
+    //a = NULL;
+    check_not_null(a, "new Arg list");
 	strcpy(a->arg, argument);
 	a->id = id;
 	a->next = NULL;
@@ -263,7 +275,7 @@ Arg *append_arg(Commands *c, Arg *a, char argument[MAX_COMMAND_LENGTH], int id, 
         printf("\n");
     }
     if(strcmp(argument, "") == 0 && !allowNoString){
-        if(lt_verbose) printf(LT_PRINT_WARN"Tried to append argument with no text but that is disallowed since allowNoString = %s\n",allowNoString?"True":"False");
+        if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"Tried to append argument with no text but that is disallowed since allowNoString = %s\n",allowNoString?"True":"False");
         return a;
     }
     if(a == NULL) return arg_create_list(c, argument, id, allowNoString);
@@ -365,7 +377,7 @@ Similar *new_similar(char *command){
     //creates a new similar node with the data of command
     //printf("Creating new similar entry with command: %s\n",command);
     Similar *s = malloc(sizeof(Similar));
-    assert(s);
+    check_not_null(s, "new Similar list");
     strncpy(s->command, command, MAX_COMMAND_LENGTH);
     s->next = NULL;
     return s;
@@ -421,6 +433,7 @@ Similar *find_similar_commands(char *command, Commands *c, int sim){
         //printf("%s has a similarity of %d  with %s\n",command, diff,  c->command);
         if(abs(diff) <= sim && c->state == COM_SHOWN){
             //the commands are similar enough (within sim characters difference)
+            printf(LT_PRINT_INFO"Command '%s' is similar to '%s'\n",c->command, command);
             s = append_similar(s, new_similar(c->command));
         }
         c = c->next;
@@ -548,7 +561,7 @@ Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char res
     //creates a new command list node with specifed data and returns it
 
     Commands *c = malloc(sizeof(Commands));
-	assert(c);
+	check_not_null(c, "new Command list");
 	strcpy(c->command, command);
 	strcpy(c->response, response);
 	strcpy(c->help_text, help_text);
@@ -562,7 +575,7 @@ Arg *init_arg_list(){
     //initialises an arg, allocates memory and sets next to null
 
     Arg *a = malloc(sizeof(Arg));
-	assert(a);
+	check_not_null(a, "initialising Arg list");
 	a->next = NULL;
 	return a;
 }

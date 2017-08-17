@@ -31,7 +31,7 @@ void init(Commands *c){
 void helpf(Commands *c, int force){
     //you can define your own help and exit commands like this
     //to define a new help command it needs a prototype of void function(Commands, int) since that is what the default uses
-    printf("Figure it out yourself\n");
+    printf("Write code here to define your own help function. Due to the inbuilt help functions prototype any help function you make must also use this prototype\n");
 }
 
 void exitf(void){
