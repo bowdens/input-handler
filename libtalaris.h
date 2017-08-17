@@ -18,6 +18,10 @@
 #define ID_EXIT -2
 #define ID_HELP -3
 
+#define LT_VERBOSE_OFF 0
+#define LT_VERBOSE_ON 1
+#define LT_VERBOSE_EXTRA 2
+
 #define C_R "\x1b[31m"
 #define C_G   "\x1b[32m"
 #define C_Y  "\x1b[33m"
@@ -25,6 +29,10 @@
 #define C_M "\x1b[35m"
 #define C_C "\x1b[36m"
 #define C_W   "\x1b[0m"
+
+#define LT_PRINT_WARN "["C_Y"WARN"C_W"]"
+#define LT_PRINT_ERROR "["C_R"ERROR"C_W"]"
+#define LT_PRINT_INFO "[INFO]"
 
 typedef struct commands{
     char command[MAX_COMMAND_LENGTH];
@@ -52,6 +60,17 @@ typedef struct similar{
     struct similar *next;
 } Similar;
 
+typedef void Helpf(Commands*, int);
+typedef void Exitf(void);
+
+void set_lt_help_function(Helpf *helpf);
+void set_lt_exit_function(Exitf *exitf);
+
+Helpf *get_lt_help_function();
+Exitf *get_lt_exit_function();
+
+void lt_help(Commands *c, int force);
+void lt_exit(void);
 
 int handle_input(Commands *c, Arg *a);
 
@@ -67,9 +86,9 @@ Commands *create_command_list(int id, char command[MAX_COMMAND_LENGTH], char res
 
 Commands *append_command_list(Commands *c, int id, char command[MAX_COMMAND_LENGTH], char response[MAX_RESPONSE_LENGTH], char help_text[MAX_HELP_TEXT_LENGTH], int state);
 
-Commands *delete_command(Commands *c, int id, int verbose);
+Commands *delete_command(Commands *c, int id);
 
-Commands *delete_command_char(Commands *c, char *command, int verbose);
+Commands *delete_command_char(Commands *c, char *command);
 
 Commands *init_command_list();
 
@@ -77,10 +96,15 @@ int command_id(char *command, Commands *c);
 
 char *command_str(int id, Commands *c);
 
+void insert_at_end(char *first, char *second, int maxLen);
+
 //GLOBAL VARIABLE INTERACTIONS
 int get_allowDuplicateCommands(void);
 void set_allowDuplicateCommands(int x);
 
 int get_allowForcePrint(void);
 void set_allowForcePrint(int x);
+
+int get_lt_verbose(void);
+void set_lt_verbose(int x);
 #endif

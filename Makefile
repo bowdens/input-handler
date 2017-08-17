@@ -6,19 +6,20 @@ MAINNAME = test.c
 OUTNAME = test
 
 
-default: $(OUTNAME) setup
+default: $(OUTNAME)
 
-$(OUTNAME): $(MAINNAME) libtalaris.so
+$(OUTNAME): libtalaris.so $(MAINNAME)
 	gcc $(MAINNAME) -ltalaris -o  $@ -Wall -Wextra
+
+libtalaris.so: libtalaris.o
+	gcc -shared -o libtalaris.so libtalaris.o
+	make setup
 
 libtalaris.a: libtalaris.o
 	ar -rcv $@ $^
 
 libtalaris.o: libtalaris.c libtalaris.h
 	gcc -c -fPIC libtalaris.c -o $@
-
-libtalaris.so: libtalaris.o
-	gcc -shared -o libtalaris.so libtalaris.o
 
 setup:
 	sudo cp ./libtalaris.so /usr/lib
