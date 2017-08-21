@@ -22,7 +22,7 @@ void init(Commands *c){
     c = append_command_list(c, ID_BARRELROLL, "barrel", "doing a barrel roll", "easter egg!", COM_HIDDEN);
 	c = append_command_list(c, ID_READFILE, "readfile", "", "reads a file specified and prints it to stdout", COM_SHOWN);
     c = append_command_list(c, ID_DELCOM, "delcom", "", "deletes a command with a specified ID", COM_SHOWN);
-    c = append_command_list(c, ID_SSECRET, "ssecret", "You aren't supposed to see this", "If you are seeing this there is an error", COM_SILENT);
+    c = append_command_list(c, ID_SSECRET, "secret", "You aren't supposed to see this", "If you are seeing this then you must be in forceprint mode.", COM_SILENT);
     c = append_command_list(c, ID_FORCEPRINT, "forceprint", "", "Toggle the state of the forced print", COM_SHOWN);
     c = append_command_list(c, ID_VERBOSEMODE, "verbosemode", "", "switch between verbose mode. verbose mode 0 = default, verbose mode 1 = verbose, verbose mode 2 = extra verbose", COM_SHOWN);
     c = append_command_list(c, ID_TOGGLEHELP, "togglehelp", "", "toggle between help functions", COM_SHOWN);

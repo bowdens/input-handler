@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define LT_UNKNOWN_COMMAND "NOSTRING"
+
 void print_error(char *error);
 
 //GLOBAL VARIBALES
@@ -124,7 +126,7 @@ int command_id(char *command, Commands *c){
     if(strcmp(command, "") == 0) return ID_NONE;
     while(c != NULL){
         if(!strcmp(command, c->command) && c->state != COM_SILENT){
-            if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"%s has id %d\n",command, c->id);
+            if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"'%s' has id %d\n",command, c->id);
             return c->id;
         }
         c = c->next;
@@ -140,7 +142,7 @@ char *command_str(int id, Commands *c){
     if(c == NULL) return "";
     while(c != NULL){
         if(c->id == id){
-            if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"command id %d is associated with command %s\n",id, c->command);
+            if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"command id %d is associated with command '%s'\n",id, c->command);
             return c->command;
         }
         c = c->next;
@@ -248,7 +250,7 @@ Arg *arg_create_list(Commands *c, char argument[MAX_COMMAND_LENGTH], int id, int
     //Only allow a null string if specified
     if(!strcmp(argument, "")  && !allowNoString){
         if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"Tried to create command with no text but that is disallowed since allowNoString = %s\n", allowNoString?"True":"False");
-        return arg_create_list(c, "unnammed", id, allowNoString);
+        return arg_create_list(c, LT_UNKNOWN_COMMAND, id, allowNoString);
     }
     //if the command with the current name already exists, append a cat num to it
     //char num[64] = {0};
@@ -433,7 +435,7 @@ Similar *find_similar_commands(char *command, Commands *c, int sim){
         //printf("%s has a similarity of %d  with %s\n",command, diff,  c->command);
         if(abs(diff) <= sim && c->state == COM_SHOWN){
             //the commands are similar enough (within sim characters difference)
-            printf(LT_PRINT_INFO"Command '%s' is similar to '%s'\n",c->command, command);
+            if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"Command '%s' is similar to '%s'\n",c->command, command);
             s = append_similar(s, new_similar(c->command));
         }
         c = c->next;
@@ -488,11 +490,16 @@ int handle_input(Commands *c, Arg *a){
     //otherwise if the command entered exists and is not hard coded, then print its response if it as one an return the id of the command executed
 	int id = a->id;
 	if(id == ID_NONE){
+        if(strcmp(a->arg, LT_UNKNOWN_COMMAND) == 0){
+            if(lt_verbose) printf(LT_PRINT_WARN"Command was returned as " LT_UNKNOWN_COMMAND " (no string was entered). Doing nothing for this\n");
+            return ID_NONE;
+        }
 		Similar *s = find_similar_commands(a->arg, c, 3);
         if(command_exists_id(c, ID_HELP)){
+            printf(LT_PRINT_ERROR"'%s' is unknown\n",a->arg);
             print_error("Unknown command. Enter "C_C"help"C_W" for a list of available commands.");
         }else{
-            print_error("Unkown command.");
+            print_error("Unknown command.");
         }
         if(s){
             //if there are similar commands
@@ -528,11 +535,19 @@ Arg *get_input(Commands *c, Arg *a/*, ArgStack *as*/){
 
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
-	printf("%c ", PROMPT_CHAR);
-    if(fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL){
-        fprintf(stderr,"\nexiting due to EOF\n");
-		exit(0);
+    char tempCommand = '\0';
+    int len = 0;
+	printf(LT_PROMPT_CHAR " ");
+    //ALTERED TO SCANF FROM FGETS
+    while((tempCommand = getchar()) && tempCommand != '\n' && len < MAX_COMMAND_LENGTH){
+        if(tempCommand == EOF){
+            fprintf(stderr,"\n%s", lt_verbose?LT_PRINT_INFO"exiting due to EOF\n":"");
+		    exit(EXIT_SUCCESS);
+        }
+        command[len] = tempCommand;
+        len++;
 	}
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"getchar resulted in '%s'\n",command);
 	a = sanatise_command(command,a,c);
 	//printf("   command entered was '%s'\n",command);
 	handle_input(c, a);

@@ -1,0 +1,2 @@
+for cli_game, get_input will be executed without waiting for user input resulting in a null string
+    might have something to do with the use of scanf before the first get_input? more testing needed
