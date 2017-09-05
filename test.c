@@ -32,12 +32,18 @@ void helpf(Commands *c, int force){
     //you can define your own help and exit commands like this
     //to define a new help command it needs a prototype of void function(Commands, int) since that is what the default uses
     printf("Write code here to define your own help function. Due to the inbuilt help functions prototype any help function you make must also use this prototype\n");
+    if(force) printf("c = %s\n",c->command);
 }
 
-void exitf(void){
-    //to define an exit function it needs the prototype of void functioN(void).
+void exitf(Commands *c, Arg *a){
+    //to define an exit function it needs the prototype of void function(Commands*, Arg*).
+    //you should free c and a with the free_comm and free_arg functions
     printf("Exiting\n.");
     printf("specify some code here\n");
+    free_comm(c);
+    printf("freed command list\n");
+    free_arg(a);
+    printf("freed argument list\n");
     exit(EXIT_SUCCESS);
 }
 

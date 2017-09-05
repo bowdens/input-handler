@@ -61,7 +61,7 @@ typedef struct similar{
 } Similar;
 
 typedef void Helpf(Commands*, int);
-typedef void Exitf(void);
+typedef void Exitf(Commands*, Arg*);
 
 void set_lt_help_function(Helpf *helpf);
 void set_lt_exit_function(Exitf *exitf);
@@ -70,7 +70,7 @@ Helpf *get_lt_help_function();
 Exitf *get_lt_exit_function();
 
 void lt_help(Commands *c, int force);
-void lt_exit(void);
+void lt_exit(Commands *c, Arg *a);
 
 int handle_input(Commands *c, Arg *a);
 
@@ -78,6 +78,8 @@ int handle_input(Commands *c, Arg *a);
 Arg *get_input(Commands *c, Arg *a);
 
 Arg *init_arg_list();
+
+Arg *free_arg(Arg *a);
 
 //Command Functions
 void print_list_commands(Commands *c);
@@ -91,6 +93,8 @@ Commands *delete_command(Commands *c, int id);
 Commands *delete_command_char(Commands *c, char *command);
 
 Commands *init_command_list();
+
+Commands *free_comm(Commands *c);
 
 int command_id(char *command, Commands *c);
 

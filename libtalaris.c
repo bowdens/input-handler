@@ -14,6 +14,42 @@ int allowDuplicateCommands = 0;
 int allowForcePrint = PRINT_SILENT;
 int lt_verbose = LT_VERBOSE_OFF;
 
+Commands *free_comm(Commands *c){
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"free_comm called for c = %p\n",c);
+    for(Commands *temp = c; temp != NULL;){
+        Commands *ttemp = temp;
+        temp = temp->next;
+        free(ttemp);
+    }
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf("\tfreed\n");
+    return NULL;
+}
+
+Arg *free_arg(Arg *a){
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"free_arg called for a = %p\n",a);
+    for(Arg *temp = a; temp != NULL; ){
+        Arg *ttemp = temp;
+        temp = temp->next;
+        free(ttemp);
+    }
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf("\tfreed\n");
+    return NULL;
+}
+
+Similar *free_similar(Similar *s){
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO "free_similar called for s = %p\n",s);
+    for(Similar *temp = s; temp != NULL; ){
+        Similar *ttemp = temp;
+        temp = temp->next;
+        free(ttemp);
+        if(temp == NULL){
+            break;
+        }
+    }
+    if(lt_verbose == LT_VERBOSE_EXTRA) printf("\tfreed\n");
+    return NULL;
+}
+
 //controls whether or not duplicate commands are allowed
 int get_allowDuplicateCommands(void){
     if(lt_verbose == LT_VERBOSE_EXTRA) printf(LT_PRINT_INFO"allowDuplicateCommands = %s\n:",allowDuplicateCommands?"True":"False");
@@ -50,8 +86,10 @@ void print_help(Commands *c, int force);
 void lt_help(Commands *c, int force){
     print_help(c, force);
 }
-void lt_exit(void){
+void lt_exit(Commands *c, Arg *a){
     printf("exiting the program due to user input\n");
+    free_comm(c);
+    free_arg(a);
     exit(0);
 }
 
@@ -90,7 +128,7 @@ void set_lt_exit_function(Exitf *exitf){
 
 void print_no_memory(char *varName){
     printf(LT_PRINT_ERROR"Tried to allocate memory for %s but could not. Out of memory or bug in program?\n",varName);
-    exit(0);
+    exit(EXIT_FAILURE);
 }
 
 void check_not_null(void *ptr, char *varName){
@@ -400,16 +438,6 @@ Similar *append_similar(Similar *a, Similar *b){
     return a;
 }
 
-void free_similar(Similar *s){
-    //frees an entire similar list
-    Similar *temp = s->next;
-    while(s){
-        temp = s->next;
-        free(s);
-        s = temp;
-    }
-    free(temp);
-}
 
 int diff_letters(char *str1, char *str2){
     //calculates how many different characters there are between two strings.
@@ -505,8 +533,9 @@ int handle_input(Commands *c, Arg *a){
             //if there are similar commands
             printf("Did you mean:\n");
             print_similar(s);
-            free_similar(s);
         }
+
+        s =free_similar(s);
     }else{
 		if(id == ID_HELP){
 			lt_help_function(c, allowForcePrint);
@@ -514,7 +543,7 @@ int handle_input(Commands *c, Arg *a){
 		}
 		while(c && c->id != id) c = c->next;
 		if(c->id == ID_EXIT && id == ID_EXIT){
-			lt_exit_function();
+			lt_exit_function(c, a);
 		}
 		if(c){
 			if(c->response[0] != '\0' && c->response[0] != '\n'){
@@ -533,6 +562,8 @@ Arg *get_input(Commands *c, Arg *a/*, ArgStack *as*/){
     //sanatises the command and turns it into an argument list
     //executes any hard coded commands and prints the response to a command if specified
 
+    //free the arg list first to ensure that there is no left over arguments
+    free_arg(a);
 	//printf("get_input called\n");
 	char command[MAX_COMMAND_LENGTH] = {0};
     char tempCommand = '\0';
@@ -542,7 +573,7 @@ Arg *get_input(Commands *c, Arg *a/*, ArgStack *as*/){
     while((tempCommand = getchar()) && tempCommand != '\n' && len < MAX_COMMAND_LENGTH){
         if(tempCommand == EOF){
             fprintf(stderr,"\n%s", lt_verbose?LT_PRINT_INFO"exiting due to EOF\n":"");
-		    exit(EXIT_SUCCESS);
+		    lt_exit_function(c, a);
         }
         command[len] = tempCommand;
         len++;
