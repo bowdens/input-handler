@@ -1,1 +1,5 @@
 *.ignore
+*.o
+*.so
+test
+test_insert_at_end
